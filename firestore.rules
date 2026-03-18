@@ -1,0 +1,105 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: sessions
+    // Document ID: {bossId} (Shared secret)
+    //
+    // Collection: sessions/{bossId}/employees
+    // Document ID: {employeeId}
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - status: string (required, enum: active, idle, suspended, panic)
+    //   - lastSeen: string (ISO 8601)
+    //   - location: map (lat: number, lng: number, timestamp: string)
+    //   - contacts: list of maps (name: string, phone: string)
+    //
+    // Collection: sessions/{bossId}/employees/{employeeId}/logs
+    // Document ID: auto-generated
+    // Fields:
+    //   - event: string (required)
+    //   - timestamp: string (ISO 8601, required)
+    //   - details: string
+    //
+    // Collection: sessions/{bossId}/calls
+    // Document ID: {employeeId}
+    // Fields:
+    //   - offer: map (sdp: string, type: string)
+    //   - answer: map (sdp: string, type: string)
+    //   - status: string
+    //   - mode: string
+    //   - startedAt: string (ISO 8601)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isValidEmployee(data) {
+      return data.id is string &&
+             data.name is string && data.name.size() > 0 &&
+             data.status in ['active', 'idle', 'suspended', 'panic'];
+    }
+
+    function isValidLog(data) {
+      return data.event is string &&
+             data.timestamp is string;
+    }
+
+    function isValidCall(data) {
+      return data.status is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /sessions/{bossId} {
+      // Only the boss can read/write the session document itself
+      allow read, write: if isAuthenticated() && request.auth.uid == bossId;
+      
+      match /employees/{employeeId} {
+        // Boss can read all employees. Employee can only read/write their own record.
+        allow read: if isAuthenticated() && (request.auth.uid == bossId || request.auth.uid == employeeId);
+        allow write: if isAuthenticated() && (request.auth.uid == bossId || request.auth.uid == employeeId);
+        
+        match /logs/{logId} {
+          allow read: if isAuthenticated() && (request.auth.uid == bossId || request.auth.uid == employeeId);
+          allow create: if isAuthenticated() && (request.auth.uid == bossId || request.auth.uid == employeeId) && isValidLog(request.resource.data);
+        }
+
+        match /history/{historyId} {
+          allow read: if isAuthenticated() && (request.auth.uid == bossId || request.auth.uid == employeeId);
+          allow create: if isAuthenticated() && (request.auth.uid == bossId || request.auth.uid == employeeId);
+        }
+      }
+
+      match /calls/{employeeId} {
+        // Both boss and employee need access to the call document for signaling
+        allow read, write: if isAuthenticated() && (request.auth.uid == bossId || request.auth.uid == employeeId);
+        
+        match /offerCandidates/{candidateId} {
+          allow read, write: if isAuthenticated() && (request.auth.uid == bossId || request.auth.uid == employeeId);
+        }
+        match /answerCandidates/{candidateId} {
+          allow read, write: if isAuthenticated() && (request.auth.uid == bossId || request.auth.uid == employeeId);
+        }
+      }
+    }
+
+    // Global catch-all for other collections (if any)
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

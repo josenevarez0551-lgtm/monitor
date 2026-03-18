@@ -1,0 +1,106 @@
+{
+  "entities": {
+    "Session": {
+      "title": "Session",
+      "description": "A monitoring session identified by bossId",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "Employee monitoring data",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "idle", "suspended", "panic"] },
+        "lastSeen": { "type": "string", "format": "date-time" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "timestamp": { "type": "string", "format": "date-time" }
+          }
+        },
+        "contacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "phone": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["id", "name", "status"]
+    },
+    "Log": {
+      "title": "Log",
+      "description": "Activity log entry",
+      "type": "object",
+      "properties": {
+        "event": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "details": { "type": "string" }
+      },
+      "required": ["event", "timestamp"]
+    },
+    "Call": {
+      "title": "Call",
+      "description": "WebRTC signaling session",
+      "type": "object",
+      "properties": {
+        "offer": { "type": "object" },
+        "answer": { "type": "object" },
+        "status": { "type": "string" },
+        "mode": { "type": "string" },
+        "startedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Candidate": {
+      "title": "Candidate",
+      "description": "ICE candidate",
+      "type": "object",
+      "properties": {
+        "candidate": { "type": "string" },
+        "sdpMid": { "type": "string" },
+        "sdpMLineIndex": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "/sessions/{bossId}": {
+      "schema": "Session",
+      "description": "Root session document"
+    },
+    "/sessions/{bossId}/employees/{employeeId}": {
+      "schema": "Employee",
+      "description": "Employee data and status"
+    },
+    "/sessions/{bossId}/employees/{employeeId}/logs/{logId}": {
+      "schema": "Log",
+      "description": "Employee activity logs"
+    },
+    "/sessions/{bossId}/employees/{employeeId}/history/{historyId}": {
+      "schema": "Log",
+      "description": "Location history"
+    },
+    "/sessions/{bossId}/calls/{employeeId}": {
+      "schema": "Call",
+      "description": "WebRTC call signaling"
+    },
+    "/sessions/{bossId}/calls/{employeeId}/offerCandidates/{candidateId}": {
+      "schema": "Candidate",
+      "description": "Offer ICE candidates"
+    },
+    "/sessions/{bossId}/calls/{employeeId}/answerCandidates/{candidateId}": {
+      "schema": "Candidate",
+      "description": "Answer ICE candidates"
+    }
+  }
+}

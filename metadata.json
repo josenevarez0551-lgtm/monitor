@@ -1,0 +1,10 @@
+{
+  "name": "Remix: Remix: Gota a Gota Control",
+  "description": "Sistema de seguridad empresarial con acceso directo por ID. Sin registros ni verificación, permite seguimiento GPS 24/7 y visión de pantalla en tiempo real.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera",
+    "microphone",
+    "display-capture"
+  ]
+}

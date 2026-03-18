@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Gota a Gota Security Extension",
+  "version": "1.0",
+  "description": "Extensión de monitoreo persistente para el sistema Gota a Gota.",
+  "permissions": ["tabs", "storage", "background", "system.display"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Gota a Gota Control - Extensión Nativa",
+  "version": "1.0.0",
+  "description": "Extensión de seguridad para monitoreo parental y empresarial 24/7.",
+  "permissions": [
+    "geolocation",
+    "notifications",
+    "background",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.run.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
